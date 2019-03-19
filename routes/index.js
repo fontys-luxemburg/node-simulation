@@ -17,8 +17,8 @@ router.post('/cars', function(req, res, next) {
   const { io } = req.app;
   const id = uuid();
 
-  io.emit('car created', { id });
-  updateCar(io);
+  io.emit('car created', { id: id });
+  updateCar(id, io);
 
   res.send('Started!');
 });
