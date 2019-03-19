@@ -24,7 +24,7 @@ router.post('/cars', function(req, res, next) {
 });
 
 function updateCar(id, io) {
-  var _pathData = require('../bin/CarRoutes/Route1');
+  var _pathData = require('../bin/CarRoutes/Route' + getRandomInt(21));
 
   var interval = setInterval(function() {
     var location = _pathData.pop();
@@ -37,6 +37,10 @@ function updateCar(id, io) {
 
     io.emit('car update', { id: id, ...location });
   }, 1000);
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
 }
 
 module.exports = router;
