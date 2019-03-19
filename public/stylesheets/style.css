@@ -10,9 +10,9 @@ body {
 
 .marker {
   width: 16px;
-  height: 16px;
-  background-color: red;
-  border-radius: 50%;
+  height: 25px;
+  background-image: url('/images/car_icon.svg');
+  background-size: cover;
 }
 
 .menu {

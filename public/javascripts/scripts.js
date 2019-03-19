@@ -15,7 +15,16 @@ function addCarToMap(car) {
   var marker = markers[car.id];
 
   if (marker) {
+    var oldLocation = marker.getLngLat();
     marker.setLngLat([car.longitude, car.latitude]);
+
+    var rotationRadians = Math.atan((oldLocation.lat - car.latitude) / (oldLocation.lng - car.longitude));
+    var RAD2DEG = 180 / Math.PI;
+    var rotationDegrees = rotationRadians * RAD2DEG;
+
+    if (Number.isNaN(rotationDegrees)) return;
+
+    marker._element.style.transform += ` rotate(${90 + (-rotationDegrees)}deg)`;
     return;
   }
 
