@@ -44,10 +44,15 @@ function renderCarList() {
   const carlistElement = document.querySelector('.car-list');
 
   var html = cars.map((car) => {
-    return `<li>${car.id}</li>`
+    return `<li onclick="panCar(\``+ car.id + `\`)">${car.id}</li>`
   }).join('');
 
   carlistElement.innerHTML = html;
+}
+
+function panCar(selectedCar){
+  var marker = markers[selectedCar];
+  map.flyTo({center: marker._lngLat, zoom: 14});
 }
 
 socket.on('car update', (car) => {
