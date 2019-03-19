@@ -35,11 +35,19 @@ function addCarToMap(car) {
 var cars = [];
 
 socket.on('car created', (car) => {
+  console.log('Car created!');
   cars.push(car);
   renderCarList();
 });
 
 function renderCarList() {
+  const carlistElement = document.querySelector('.car-list');
+
+  var html = cars.map((car) => {
+    return `<li>${car.id}</li>`
+  }).join('');
+
+  carlistElement.innerHTML = html;
 }
 
 socket.on('car update', (car) => {
