@@ -6,7 +6,6 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "bull": "^3.7.0",
     "cookie-parser": "~1.4.3",
     "cron": "^1.7.0",
     "debug": "~2.6.9",
@@ -18,6 +17,7 @@
     "pg-hstore": "^2.3.2",
     "pug": "^2.0.3",
     "sequelize": "^5.1.0",
+    "servicebus": "^2.3.3",
     "socket.io": "^2.2.0",
     "uuid": "^3.3.2"
   }
