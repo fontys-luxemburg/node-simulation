@@ -1,18 +1,53 @@
-document.addEventListener("DOMContentLoaded", function(){
-  var socket = io();
+var socket = io();
 
-  mapboxgl.accessToken = 'pk.eyJ1IjoiYmFra2VydG9tIiwiYSI6ImNqcmNlOWxxNzBqOXEzeXVweGU5MDVtdHcifQ.cqW0zPc4MPNR57p-2tP5aQ';
-  var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11',
-    center: [6.0924, 49.7792],
-    zoom: 8.5
-  });
+mapboxgl.accessToken = 'pk.eyJ1IjoiYmFra2VydG9tIiwiYSI6ImNqcmNlOWxxNzBqOXEzeXVweGU5MDVtdHcifQ.cqW0zPc4MPNR57p-2tP5aQ';
 
-  fetch('/cars').then(data => data.json()).then(cars => {
-    cars.map(car => {
-      let marker = new mapboxgl.Marker().setLngLat([car.longitude, car.latitude]).addTo(map);
-    });
-    console.log('--CARS', cars);
-  });
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [6.0924, 49.7792],
+  zoom: 8.5
+});
+
+let markers = {};
+
+function addCarToMap(car) {
+  var marker = markers[car.id];
+
+  if (marker) {
+    marker.setLngLat([car.longitude, car.latitude]);
+    return;
+  }
+
+  var el = document.createElement('div');
+  el.className = 'marker';
+
+  marker = new mapboxgl.Marker(el);
+  marker.setLngLat([car.longitude, car.latitude]);
+  marker.addTo(map);
+
+  markers = {
+    ...markers,
+    [car.id]: marker
+  };
+}
+
+var cars = [];
+
+socket.on('car created', (car) => {
+  cars.push(car);
+  renderCarList();
+});
+
+function renderCarList() {
+}
+
+socket.on('car update', (car) => {
+  addCarToMap(car);
+});
+
+let addCarBtn = document.querySelector('#addCarBtn');
+
+addCarBtn.addEventListener('click', () => {
+  fetch('/cars', { method: 'POST' }).then(() => {});
 });

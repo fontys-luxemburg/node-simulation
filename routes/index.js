@@ -1,48 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var Queue = require('bull');
-var Car = require('../models').Car;
-
-var carQueue = new Queue('car simulation', 'redis://localhost:6379');
-
-carQueue.process(function(job, done) {
-  console.log('START OF JOB!', job.data.trackerId);
-
-  var _pathData = [
-    {latitude: 42.352376, longitude: -71.064548},
-    {latitude: 42.353454, longitude: -71.064184},
-    {latitude: 42.354707, longitude: -71.063647},
-    {latitude: 42.355785, longitude: -71.062768},
-    {latitude: 42.356483, longitude: -71.062016},
-    {latitude: 42.357069, longitude: -71.062660},
-    {latitude: 42.357672, longitude: -71.063261},
-    {latitude: 42.357164, longitude: -71.064978},
-    {latitude: 42.356768, longitude: -71.066844},
-    {latitude: 42.356213, longitude: -71.069334},
-    {latitude: 42.355832, longitude: -71.070921},
-    {latitude: 42.355452, longitude: -71.072509},
-    {latitude: 42.353517, longitude: -71.071479},
-    {latitude: 42.351947, longitude: -71.070685},
-    {latitude: 42.352566, longitude: -71.067595},
-    {latitude: 42.352344, longitude: -71.064591}
-  ];
-
-  var refreshId = setInterval(function() {
-    Car.findByPk(job.data.trackerId).then(car => {
-      var location = _pathData.pop();
-
-      if(!location) {
-        clearInterval(refreshId);
-        return;
-      }
-
-      car.update(location);
-      console.log('-- UPDATE DATA WITH', location)
-    })
-  }, 1000);
-
-  done();
-});
+var uuid = require('uuid/v4');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -56,11 +14,75 @@ router.get('/cars', function(req, res, next) {
 });
 
 router.post('/cars', function(req, res, next) {
-  Car.create({ trackerId: 'test' }).then(car => {
-    carQueue.add({ trackerId: car.id });
-  });
+  const { io } = req.app;
+  const id = uuid();
+
+  io.emit('car created', { id });
+  updateCar(io);
 
   res.send('Started!');
 });
+
+function updateCar(id, io) {
+  var _pathData = [
+    {longitude: 6.09643, latitude: 49.82378},
+    {longitude: 6.09667, latitude: 49.82461},
+    {longitude: 6.09667, latitude: 49.82461},
+    {longitude: 6.09608, latitude: 49.82479},
+    {longitude: 6.09594, latitude: 49.82484},
+    {longitude: 6.09594, latitude: 49.82484},
+    {longitude: 6.09596, latitude: 49.82496},
+    {longitude: 6.09603, latitude: 49.82554},
+    {longitude: 6.09621, latitude: 49.82663},
+    {longitude: 6.0963, latitude: 49.82723},
+    {longitude: 6.09629, latitude: 49.82745},
+    {longitude: 6.09626, latitude: 49.82812},
+    {longitude: 6.09626, latitude: 49.82822},
+    {longitude: 6.09618, latitude: 49.82966},
+    {longitude: 6.09621, latitude: 49.82996},
+    {longitude: 6.09625, latitude: 49.8301},
+    {longitude: 6.09639, latitude: 49.83053},
+    {longitude: 6.09653, latitude: 49.83084},
+    {longitude: 6.09654, latitude: 49.83087},
+    {longitude: 6.09656, latitude: 49.8309},
+    {longitude: 6.09667, latitude: 49.83113},
+    {longitude: 6.09671, latitude: 49.8312},
+    {longitude: 6.09675, latitude: 49.83127},
+    {longitude: 6.09679, latitude: 49.83134},
+    {longitude: 6.09688, latitude: 49.83146},
+    {longitude: 6.0969, latitude: 49.83149},
+    {longitude: 6.09704, latitude: 49.83164},
+    {longitude: 6.0973, latitude: 49.83195},
+    {longitude: 6.09735, latitude: 49.83201},
+    {longitude: 6.09745, latitude: 49.8322},
+    {longitude: 6.09747, latitude: 49.83233},
+    {longitude: 6.09751, latitude: 49.83253},
+    {longitude: 6.09753, latitude: 49.83278},
+    {longitude: 6.09757, latitude: 49.83317},
+    {longitude: 6.09757, latitude: 49.8332},
+    {longitude: 6.09757, latitude: 49.83331},
+    {longitude: 6.09757, latitude: 49.83365},
+    {longitude: 6.09758, latitude: 49.83435},
+    {longitude: 6.09758, latitude: 49.83435},
+    {longitude: 6.09773, latitude: 49.83434},
+    {longitude: 6.09898, latitude: 49.83426},
+    {longitude: 6.09906, latitude: 49.83422},
+    {longitude: 6.09911, latitude: 49.83417},
+    {longitude: 6.09912, latitude: 49.83413},
+    {longitude: 6.09912, latitude: 49.83413}
+  ];
+
+  var interval = setInterval(function() {
+    var location = _pathData.pop();
+
+    if(!location) {
+      clearInterval(interval);
+      io.emit('car finished', { id });
+      return;
+    }
+
+    io.emit('car update', { id: id, ...location });
+  }, 1000);
+}
 
 module.exports = router;
