@@ -17,36 +17,51 @@ router.get("/cars", function(req, res, next) {
 router.post("/cars", function(req, res, next) {
   const { io } = req.app;
 
-  console.log("CONNECTION WITH RABBITMQ READY");
   const id = uuid();
   io.emit("car created", { id: id });
-  updateCar(id, io);
+  simulateCar(id, io);
 
   res.send("Started!");
 });
 
-function updateCar(id, io) {
+function simulateCar(id, io) {
   var _pathData = require("../bin/CarRoutes/Route" + getRandomInt(21));
+  var simulator = require("../models/geolocation-simulator")({
+    coords: _pathData,
+    speed: Math.floor(Math.random() * (120 - 50 + 1)) + 50
+  });
+
+  simulator.start();
+
+  var options = {
+    enableHighAccuracy: true,
+    timeout: Infinity,
+    maximumAge: 0
+  };
 
   var interval = setInterval(function() {
-    var location = _pathData.pop();
+    simulator.getCurrentPosition(
+      function(data) {
+        const { latitude, longitude } = data.coords;
 
-    if (!location) {
-      clearInterval(interval);
-      io.emit("car finished", { id });
-      return;
-    }
+        bus.send("TrackingQueue", {
+          trackerID: id,
+          tripID: 12,
+          longitude: longitude,
+          latitude: latitude,
+          trackedAt: new Date()
+        });
 
-    bus.send("TrackingQueue", {
-      trackerID: id,
-      tripID: 12,
-      longitude: location.longitude,
-      latitude: location.latitude,
-      trackedAt: new Date()
-    });
-
-    io.emit("car update", { id: id, ...location });
-  }, 1000);
+        io.emit("car update", { id: id, ...data.coords });
+      },
+      function() {
+        io.emit("car finished", { id });
+        clearInterval(interval);
+        return;
+      },
+      options
+    );
+  }, 500);
 }
 
 function getRandomInt(max) {
