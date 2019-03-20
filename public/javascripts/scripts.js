@@ -26,6 +26,7 @@ function addCarToMap(car) {
     if (Number.isNaN(rotationDegrees)) return;
 
     marker._element.style.transform += ` rotate(${90 + (-rotationDegrees)}deg)`;
+
     return;
   }
 
@@ -64,14 +65,14 @@ function renderCarList() {
   const carlistElement = document.querySelector(".car-list");
 
   var html = cars.map((car) => {
-    return `<li onclick="panCar(\``+ car.id + `\`)">${car.id}</li>`
+    return `<button onClick="panCar('${car.id}')" data-car="${car.id}" class="text-left w-full border-b border-grey-lighter py-2">${car.id}</button>`
   }).join('');
 
   carlistElement.innerHTML = html;
 }
 
-function panCar(selectedCar){
-  var marker = markers[selectedCar];
+function panCar(e) {
+  var marker = markers[e];
   map.flyTo({center: marker._lngLat, zoom: 14});
 }
 
