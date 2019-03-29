@@ -85,7 +85,5 @@ let addCarBtn = document.querySelector("#addCarBtn");
 let amountOfCars = document.querySelector("#amountOfCars");
 
 addCarBtn.addEventListener("click", () => {
-  for (let index = 0; index < amountOfCars.value; index++) {
-    fetch("/cars", { method: "POST" }).then(() => {});
-  }
+  fetch(`/cars?amountOfCars=${amountOfCars.value}`, { method: "POST" }).then(() => {});
 });

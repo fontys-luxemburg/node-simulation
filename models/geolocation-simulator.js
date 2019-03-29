@@ -100,8 +100,7 @@ module.exports = function(params) {
         if (_done) {
             if(_coords[_coords.length-1].latitude == _current.coords.latitude)
             {
-            //console.log("Point to reach= Lat:" + _coords[_coords.length -1].latitude + " Long:" + _coords[_coords.length -1].longitude + " Current= Lat:" + _current.coords.latitude + " Long" + _current.coords.longitude);
-            return error();
+                return error();
             }
             else
             {

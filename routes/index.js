@@ -10,24 +10,28 @@ router.get("/", function(req, res, next) {
 
 router.post("/cars", function(req, res, next) {
   const { io } = req.app;
-  const id = uuid();
+  console.log("amount of cars: " + req.query.amountOfCars);
+  for (let index = 0; index < req.query.amountOfCars; index++) {
+    const id = uuid();
 
-  io.emit("car created", { id: id });
-  simulateCar(id, io);
+    io.emit("car created", { id: id });
+    simulateCar(id, io);
 
-  res.send("Started!");
+    res.send("Started!");
+  } 
 });
 
-function simulateCar(id, io) {
-  //var _pathData = require("../bin/CarRoutes/Route" + getRandomInt(19));
-  
+function simulateCar(id, io) { 
   var randomint = getRandomInt(2);
 
   const fs = require('fs');
   const path = require("path");
-  let rawdata = fs.readFileSync(path.resolve( process.cwd(), './bin/CarRoutes/Route' + getRandomInt(19) + '.json'));
+  var randomRoute = getRandomInt(19);
+  console.log(randomRoute);
+  
+  let rawdata = fs.readFileSync(path.resolve( process.cwd(), './bin/CarRoutes/Route' + randomRoute + '.json'));
   let _pathData = JSON.parse(rawdata);
-  console.log(randomint);
+
   if(randomint == 1)
   {
     _pathData = _pathData.reverse();
