@@ -82,8 +82,9 @@ socket.on('car update', (car) => {
 });
 
 let addCarBtn = document.querySelector("#addCarBtn");
+let id = document.querySelector("#ID");
 let amountOfCars = document.querySelector("#amountOfCars");
 
 addCarBtn.addEventListener("click", () => {
-  fetch(`/cars?amountOfCars=${amountOfCars.value}`, { method: "POST" }).then(() => {});
+  fetch(`/cars?amountOfCars=${amountOfCars.value}&ID=${ID.value}`, { method: "POST" }).then(() => {});
 });
