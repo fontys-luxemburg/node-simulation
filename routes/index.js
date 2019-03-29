@@ -40,7 +40,7 @@ function simulateCar(id, io) {
   //Set up requirements for route selecting
   const fs = require('fs');
   const path = require("path");
-  var randomRoute = getRandomInt(19);
+  var randomRoute = getRandomInt(29);
   console.log("Route Selected for Car " + id + ": " + randomRoute);
   
   //Get route

@@ -16,6 +16,7 @@ body {
 }
 
 .menu {
+  text-align: center;
   position: fixed;
   top: 24px;
   right: 24px;
@@ -37,4 +38,8 @@ body {
   height: 300px;
   overflow: hidden;
   overflow-y: scroll;
+}
+
+.center {
+  display: inline-block;
 }

@@ -12,6 +12,8 @@ var map = new mapboxgl.Map({
 
 let markers = {};
 
+const counter = document.querySelector("#counter");
+
 function addCarToMap(car) {
   var marker = markers[car.id];
 
@@ -64,7 +66,7 @@ socket.on("car finished", car => {
 
 function renderCarList() {
   const carlistElement = document.querySelector(".car-list");
-
+  counter.innerHTML = "Cars driving: " + cars.length
   var html = cars.map((car) => {
     return `<button onClick="panCar('${car.id}')" data-car="${car.id}" class="text-left w-full border-b border-grey-lighter py-2">${car.id}</button>`
   }).join('');
