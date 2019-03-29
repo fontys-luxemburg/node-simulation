@@ -46,14 +46,15 @@ function addCarToMap(car) {
 var cars = [];
 
 socket.on("car created", car => {
-  console.log("Car created!");
+  console.log("Car created!   " + car.id);
   cars.push(car);
   renderCarList();
 });
 
 socket.on("car finished", car => {
+  console.log("remove car " + car.id);
   cars = cars.filter(item => {
-    return item.id !== car.id;
+    return item.id != car.id;
   });
 
   markers[car.id].remove();
@@ -81,7 +82,8 @@ socket.on('car update', (car) => {
 });
 
 let addCarBtn = document.querySelector("#addCarBtn");
+let amountOfCars = document.querySelector("#amountOfCars");
 
 addCarBtn.addEventListener("click", () => {
-  fetch("/cars", { method: "POST" }).then(() => {});
+  fetch(`/cars?amountOfCars=${amountOfCars.value}`, { method: "POST" }).then(() => {});
 });

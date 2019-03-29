@@ -8,27 +8,40 @@ router.get("/", function(req, res, next) {
   res.render("index", { title: "Express" });
 });
 
-router.get("/cars", function(req, res, next) {
-  Car.findAll().then(cars => {
-    res.send(JSON.stringify(cars));
-  });
-});
-
 router.post("/cars", function(req, res, next) {
   const { io } = req.app;
+  var amount = req.query.amountOfCars;
+  console.log("amount of cars: " + amount);
+  for (let index = 0; index < amount; index++) {
+    const id = uuid();
 
-  const id = uuid();
-  io.emit("car created", { id: id });
-  simulateCar(id, io);
-
+    io.emit("car created", { id: id });
+    simulateCar(id, io);
+  }
   res.send("Started!");
 });
 
-function simulateCar(id, io) {
-  var _pathData = require("../bin/CarRoutes/Route" + getRandomInt(21));
+function simulateCar(id, io) { 
+  var randomint = getRandomInt(2);
+
+  const fs = require('fs');
+  const path = require("path");
+  var randomRoute = getRandomInt(19);
+  console.log("Route Selected for Car " + id + ": " + randomRoute);
+  
+  let rawdata = fs.readFileSync(path.resolve( process.cwd(), './bin/CarRoutes/Route' + randomRoute + '.json'));
+  let _pathData = JSON.parse(rawdata);
+
+  if(randomint == 1)
+  {
+    _pathData = _pathData.reverse();
+    console.log("Reverse!");
+  }
+
   var simulator = require("../models/geolocation-simulator")({
     coords: _pathData,
-    speed: Math.floor(Math.random() * (120 - 50 + 1)) + 50
+    speed: Math.floor(Math.random() * (120 - 50 + 1)) + 50,
+    done: false
   });
 
   simulator.start();
@@ -65,7 +78,7 @@ function simulateCar(id, io) {
 }
 
 function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
+  return Math.floor(Math.random() * Math.floor(max) + 1);
 }
 
 module.exports = router;

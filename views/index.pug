@@ -4,7 +4,10 @@ block content
   .content
     .menu
       .car-list
-      button(type='button', id='addCarBtn', class="bg-blue block px-2 py-4 text-white w-full rounded") Add car
+      button(type='button', id='addCarBtn' style="margin-left: 7px;" class="bg-blue hover:bg-blue-light text-white font-bold py-4 px-16 border-b-4 border-blue-dark rounded") Add car
+      br
+      br
+      input(type="number" id='amountOfCars' class="bg-grey-lighter block text-grey-darker text-sm font-bold px-2 py-3 shadow-md rounded" placeholder="Amount of cars")
     div(id='map')
 
     script(src='/javascripts/scripts.js')

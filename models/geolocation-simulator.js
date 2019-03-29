@@ -29,8 +29,8 @@ module.exports = function(params) {
         _index = -1,
         _pauseTimeout,
         _numSteps,
-        _currentStep
-        _done = false;
+        _currentStep;
+        //_done = false;
 
     //public functions
     self.start = function() {
@@ -79,7 +79,7 @@ module.exports = function(params) {
             }
         } else {
             // //path is complete
-            _done = true;
+            params.done = true;
         }
     }
 
@@ -97,7 +97,7 @@ module.exports = function(params) {
 
     //override native geolocation
     self.getCurrentPosition = function(cb,error,options) {
-        if (_done) {
+        if (params.done) {
             return error();
         }
 
