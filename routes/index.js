@@ -10,15 +10,15 @@ router.get("/", function(req, res, next) {
 
 router.post("/cars", function(req, res, next) {
   const { io } = req.app;
-  console.log("amount of cars: " + req.query.amountOfCars);
-  for (let index = 0; index < req.query.amountOfCars; index++) {
+  var amount = req.query.amountOfCars;
+  console.log("amount of cars: " + amount);
+  for (let index = 0; index < amount; index++) {
     const id = uuid();
 
     io.emit("car created", { id: id });
     simulateCar(id, io);
-
-    res.send("Started!");
-  } 
+  }
+  res.send("Started!");
 });
 
 function simulateCar(id, io) { 
@@ -27,7 +27,7 @@ function simulateCar(id, io) {
   const fs = require('fs');
   const path = require("path");
   var randomRoute = getRandomInt(19);
-  console.log(randomRoute);
+  console.log("Route Selected for Car " + id + ": " + randomRoute);
   
   let rawdata = fs.readFileSync(path.resolve( process.cwd(), './bin/CarRoutes/Route' + randomRoute + '.json'));
   let _pathData = JSON.parse(rawdata);
@@ -40,7 +40,8 @@ function simulateCar(id, io) {
 
   var simulator = require("../models/geolocation-simulator")({
     coords: _pathData,
-    speed: Math.floor(Math.random() * (120 - 50 + 1)) + 50
+    speed: Math.floor(Math.random() * (120 - 50 + 1)) + 50,
+    done: false
   });
 
   simulator.start();
@@ -51,7 +52,6 @@ function simulateCar(id, io) {
     maximumAge: 0
   };
 
-  var doIt = false;
   var interval = setInterval(function() {
     simulator.getCurrentPosition(
       function(data) {
@@ -69,7 +69,6 @@ function simulateCar(id, io) {
       },
       function() {
         io.emit("car finished", { id });
-        doIt = true;
         clearInterval(interval);
         return;
       },
