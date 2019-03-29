@@ -10,10 +10,24 @@ router.get("/", function(req, res, next) {
 
 router.post("/cars", function(req, res, next) {
   const { io } = req.app;
+
   var amount = req.query.amountOfCars;
-  console.log("amount of cars: " + amount);
+  var ID = req.query.ID;
+
+  console.log("amount of cars: " + amount + " ID: " + ID);
+
+  //Spawn cars
   for (let index = 0; index < amount; index++) {
-    const id = uuid();
+    //ID
+    let id;
+    if(ID && amount == 1)
+    {
+      id = ID;
+    }
+    else
+    {
+      id = uuid();
+    }
 
     io.emit("car created", { id: id });
     simulateCar(id, io);
@@ -21,23 +35,26 @@ router.post("/cars", function(req, res, next) {
   res.send("Started!");
 });
 
+//Simulate car
 function simulateCar(id, io) { 
-  var randomint = getRandomInt(2);
-
+  //Set up requirements for route selecting
   const fs = require('fs');
   const path = require("path");
   var randomRoute = getRandomInt(19);
   console.log("Route Selected for Car " + id + ": " + randomRoute);
   
+  //Get route
   let rawdata = fs.readFileSync(path.resolve( process.cwd(), './bin/CarRoutes/Route' + randomRoute + '.json'));
   let _pathData = JSON.parse(rawdata);
 
-  if(randomint == 1)
+  //Decide if it will be in reverse
+  if(getRandomInt(2) == 1)
   {
     _pathData = _pathData.reverse();
     console.log("Reverse!");
   }
 
+  //Create simulator
   var simulator = require("../models/geolocation-simulator")({
     coords: _pathData,
     speed: Math.floor(Math.random() * (120 - 50 + 1)) + 50,
@@ -52,11 +69,11 @@ function simulateCar(id, io) {
     maximumAge: 0
   };
 
+  //Update car untill finished
   var interval = setInterval(function() {
     simulator.getCurrentPosition(
       function(data) {
         const { latitude, longitude } = data.coords;
-
         bus.send("TrackingQueue", {
           trackerID: id,
           tripID: 12,
