@@ -26,7 +26,8 @@ router.post("/cars", function(req, res, next) {
     }
     else
     {
-      id = uuid();
+      //id = uuid();
+      id = Math.floor(Math.random() * 10000) + 1;
     }
 
     io.emit("car created", { id: id });
