@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\bin",
+    "\\migrations",
+    "\\node_modules\\servicebus",
+    "\\public",
+    "\\public\\images",
+    "\\public\\javascripts",
+    "\\public\\stylesheets",
+    "\\routes",
+    "\\views"
+  ],
+  "SelectedNode": "\\models\\car.js",
+  "PreviewInSolutionExplorer": false
+}
