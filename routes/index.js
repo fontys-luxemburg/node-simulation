@@ -4,12 +4,17 @@ var uuid = require("uuid/v4");
 var bus = require("servicebus").bus();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
+const path = "http://localhost:8080/tracking/api/trackers";
+var axios = require("axios");
+
+var uuidP;
+
 /* GET home page. */
 router.get("/", function(req, res, next) {
   res.render("index", { title: "Express" });
 });
 
-router.post("/cars", function(req, res, next) {
+ router.post("/cars", async function(req, res, next) {
   const { io } = req.app;
 
   var amount = req.query.amountOfCars;
@@ -20,7 +25,7 @@ router.post("/cars", function(req, res, next) {
   //Spawn cars
   for (let index = 0; index < amount; index++) {
     //ID
-    let id;
+    var id;
     if(ID && amount == 1)
     {
       id = ID;
@@ -28,8 +33,10 @@ router.post("/cars", function(req, res, next) {
     else
     {
       //id = uuid();
-      id = Math.floor(Math.random() * 10000) + 1;
-	  
+      //id = Math.floor(Math.random() * 10000) + 1;
+      await getUUID();
+      console.log("UUID: " + uuidP);
+      id = uuidP;
     }
 
     io.emit("car created", { id: id });
@@ -122,6 +129,27 @@ function simulateCar(id, io) {
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max) + 1);
+}
+
+async function getUUID() {
+ 
+  console.log('path = ' + path);
+
+  await axios({
+    method: 'POST',
+    url: path,
+    data: {}
+  })
+  .then(response => {
+    console.log("UUID van tracking");
+    uuidP = response.data;
+  })
+  .catch(e => {
+    console.log('id wordt UUID gezet');
+    console.log(e);
+    uuidP = uuid();
+  })
+  return;
 }
 
 module.exports = router;
