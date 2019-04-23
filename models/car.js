@@ -1,9 +1,10 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Car = sequelize.define('Car', {
-    trackerId: DataTypes.STRING,
+    trackerId: DataTypes.INT,
     latitude: DataTypes.FLOAT,
-    longitude: DataTypes.FLOAT
+    longitude: DataTypes.FLOAT,
+	tripID: DataTypes.INT
   }, {});
 
   Car.associate = function(models) {

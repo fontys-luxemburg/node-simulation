@@ -2,7 +2,8 @@ var express = require("express");
 var router = express.Router();
 var uuid = require("uuid/v4");
 var bus = require("servicebus").bus();
-
+var amqp = require('amqplib/callback_api');
+const JSON5 = require('json5')
 /* GET home page. */
 router.get("/", function(req, res, next) {
   res.render("index", { title: "Express" });
@@ -28,6 +29,7 @@ router.post("/cars", function(req, res, next) {
     {
       //id = uuid();
       id = Math.floor(Math.random() * 10000) + 1;
+	  
     }
 
     io.emit("car created", { id: id });
@@ -67,22 +69,43 @@ function simulateCar(id, io) {
   var options = {
     enableHighAccuracy: true,
     timeout: Infinity,
-    maximumAge: 0
+    maximumAge: 0,
+	durable: false,
+	auto_delete:false
   };
+
 
   //Update car untill finished
   var interval = setInterval(function() {
     simulator.getCurrentPosition(
       function(data) {
+	 
         const { latitude, longitude } = data.coords;
-        bus.send("TrackingQueue", {
+    /*    bus.send("TrackingQueue",{
           trackerID: id,
-          tripID: 12,
+          tripID: Math.floor(Math.random()*999999)+1,
+          longitude: longitude,
+          latitude: latitude,
+          trackedAt: new Date()
+        });*/
+		var obj = JSON5.stringify({
+          trackerID: id,
+          tripID: id,
           longitude: longitude,
           latitude: latitude,
           trackedAt: new Date()
         });
+		console.log(obj);
+		 amqp.connect('amqp://localhost', function(err, conn) {
+			conn.createChannel(function(err, ch) {
+			var q = 'TrackingQueue';
 
+			ch.assertQueue(q, {durable: false});
+			// Note: on Node 6 Buffer.from(msg) should be used
+			ch.sendToQueue(q, new Buffer(obj));
+			console.log(" [x] Sent 'Hello World!'");
+			});
+		});
         io.emit("car update", { id: id, ...data.coords });
       },
       function() {
@@ -94,6 +117,8 @@ function simulateCar(id, io) {
     );
   }, 500);
 }
+
+
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max) + 1);
