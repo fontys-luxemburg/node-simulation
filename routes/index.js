@@ -4,10 +4,12 @@ var uuid = require("uuid/v4");
 var bus = require("servicebus").bus();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
-const path = "http://localhost:8080/tracking/api/trackers";
+const path = "http://localhost:8080/tracking.war/api/trackers/available";
+const tripPath = "http://localhost:8080/tracking.war/api/trips/getnewID"; 
 var axios = require("axios");
 
-var uuidP;
+var trackers;
+var trip;
 
 /* GET home page. */
 router.get("/", function(req, res, next) {
@@ -17,34 +19,22 @@ router.get("/", function(req, res, next) {
  router.post("/cars", async function(req, res, next) {
   const { io } = req.app;
 
-  var amount = req.query.amountOfCars;
-  var ID = req.query.ID;
-
-  console.log("amount of cars: " + amount + " ID: " + ID);
-
   //Spawn cars
-  for (let index = 0; index < amount; index++) {
+  await getUUID();
+
+  trackers.forEach(tracker => {
     //ID
-    var id;
-    if(ID && amount == 1)
-    {
-      id = ID;
-    }
-    else
-    {
-      await getUUID();
-      console.log("UUID: " + uuidP);
-      id = uuidP;
-    }
+    var id = tracker.trackerId;
 
-    //Get een nieuwe TripID
-    //Gebruik een await anders gaat het programma door
-    //Dit werkt alleen als er async voor de function staat die je aanroept zie getUUID
-    var tripID = 1;
+    console.log("UUID: " + id);
 
-    io.emit("car created", { id: id });
-    simulateCar(id, tripID, io);
-  }
+    await getTripID();
+    var tripID = trip;
+
+    io.emit("car created", {id: id});
+    simulateCar(id, tripID, io);    
+  });
+  
   res.send("Started!");
 });
 
@@ -100,7 +90,7 @@ function simulateCar(id, tripID, io) {
         });
 		var obj = JSON5.stringify({
           trackerID: id,
-          tripID: id,
+          tripID: tripID,
           longitude: longitude,
           latitude: latitude,
           trackedAt: new Date()
@@ -137,20 +127,35 @@ async function getUUID() {
   console.log('path = ' + path);
 
   await axios({
-    method: 'POST',
+    method: 'GET',
     url: path,
     data: {}
   })
   .then(response => {
     console.log("UUID van tracking");
-    uuidP = response.data;
+    trackers = response.data;
   })
   .catch(e => {
-    console.log('id wordt UUID gezet');
+    console.log('Kan geen trackers vinden');
     console.log(e);
-    uuidP = uuid();
   })
   return;
+}
+
+async function getTripID(){
+
+  await axios({
+    method: 'GET',
+    url: tripPath,
+    data: {}
+  })
+  .then(response => {
+    trip = response.data;
+  })
+  .catch(e => {
+    console.log("Kan geen trip vinden");
+    console.log(e);
+  })  
 }
 
 module.exports = router;
