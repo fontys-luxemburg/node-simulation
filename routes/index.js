@@ -5,7 +5,7 @@ var bus = require("servicebus").bus();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
 const path = "http://localhost:8080/tracking.war/api/trackers/available";
-const tripPath = "http://localhost:8080/tracking.war/api/trips/getnewID"; 
+const tripPath = "http://localhost:8080/tracking.war/api/trips/newid"; 
 var axios = require("axios");
 
 var trackers;
@@ -34,7 +34,7 @@ router.get("/", function(req, res, next) {
     io.emit("car created", {id: id});
     simulateCar(id, tripID, io);    
   });
-  
+
   res.send("Started!");
 });
 
