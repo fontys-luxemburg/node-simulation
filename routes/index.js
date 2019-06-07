@@ -32,21 +32,24 @@ router.get("/", function(req, res, next) {
     }
     else
     {
-      //id = uuid();
-      //id = Math.floor(Math.random() * 10000) + 1;
       await getUUID();
       console.log("UUID: " + uuidP);
       id = uuidP;
     }
 
+    //Get een nieuwe TripID
+    //Gebruik een await anders gaat het programma door
+    //Dit werkt alleen als er async voor de function staat die je aanroept zie getUUID
+    var tripID = 1;
+
     io.emit("car created", { id: id });
-    simulateCar(id, io);
+    simulateCar(id, tripID, io);
   }
   res.send("Started!");
 });
 
 //Simulate car
-function simulateCar(id, io) { 
+function simulateCar(id, tripID, io) { 
   //Set up requirements for route selecting
   const fs = require('fs');
   const path = require("path");
@@ -88,13 +91,13 @@ function simulateCar(id, io) {
       function(data) {
 	 
         const { latitude, longitude } = data.coords;
-    /*    bus.send("TrackingQueue",{
+        bus.send("TrackingQueue",{
           trackerID: id,
-          tripID: Math.floor(Math.random()*999999)+1,
+          tripID: tripID,
           longitude: longitude,
           latitude: latitude,
           trackedAt: new Date()
-        });*/
+        });
 		var obj = JSON5.stringify({
           trackerID: id,
           tripID: id,
@@ -124,8 +127,6 @@ function simulateCar(id, io) {
     );
   }, 500);
 }
-
-
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max) + 1);
