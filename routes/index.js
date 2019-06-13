@@ -23,10 +23,15 @@ router.get("/", function(req, res, next) {
   await getUUID();
 
   for (tracker in trackers){
+    //todo: remove - for testing 
+    console.log('tracker data');
+    console.log(JSON.stringify(tracker));
+
     var id = tracker.trackerId;
 
     await getTripID();
     var tripID = trip;
+    console.log('Trip nr: ' + trip);
 
     io.emit("car created", {id: id});
     simulateCar(id, tripID, io);
@@ -120,39 +125,24 @@ function getRandomInt(max) {
 }
 
 async function getUUID() {
- 
   console.log('path = ' + path);
-
-  await axios({
-    method: 'GET',
-    url: path,
-    data: {}
-  })
-  .then(response => {
-    console.log("UUID van tracking");
+  await axios.get(path).then(response => {
     trackers = response.data;
-  })
-  .catch(e => {
-    console.log('Kan geen trackers vinden');
-    console.log(e);
-  })
+  }).catch(error => {
+    console.log("kan geen tracker vinden")
+    console.log(error.response)
+  });
   return;
 }
 
 async function getTripID(){
-
-  await axios({
-    method: 'GET',
-    url: tripPath,
-    data: {}
-  })
-  .then(response => {
+  console.log('path = ' + tripPath)
+  await axios.get(tripPath).then(response => {
     trip = response.data;
+  }).catch(error => {
+    console.log("kan geen trip vinden")
+    console.log(error.response)
   })
-  .catch(e => {
-    console.log("Kan geen trip vinden");
-    console.log(e);
-  })  
 }
 
 module.exports = router;
