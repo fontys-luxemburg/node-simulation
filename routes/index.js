@@ -24,7 +24,7 @@ router.get("/", function(req, res, next) {
 
   for(var tracker of trackers){
     console.log('tracker id = ' + tracker.trackerId);
-    
+
     var id = tracker.trackerId;
 
     await getTripID();
@@ -34,9 +34,7 @@ router.get("/", function(req, res, next) {
     io.emit("car created", {id: id});
     simulateCar(id, tripID, io);  
   }
-// trackers.forEach(tracker => {
   
-// });
   res.send("Started!");
 });
 
