@@ -22,17 +22,19 @@ router.get("/", function(req, res, next) {
   //Spawn cars
   await getUUID();
 
-trackers.forEach(tracker => {
-  var id = tracker.trackerId;
+  for(var tracker of trackers){
+    console.log('tracker id = ' + tracker.trackerId);
 
-  getTripID();
-  var tripID = trip;
-  console.log('Trip nr: ' + trip);
+    var id = tracker.trackerId;
 
-  io.emit("car created", {id: id});
-  simulateCar(id, tripID, io);  
-});
+    await getTripID();
+    var tripID = trip;
+    console.log('Trip nr: ' + trip);
 
+    io.emit("car created", {id: id});
+    simulateCar(id, tripID, io);  
+  }
+  
   res.send("Started!");
 });
 
