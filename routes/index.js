@@ -69,7 +69,7 @@ function simulateCar(id, tripID, io) {
     timeout: Infinity,
     maximumAge: 0,
 	durable: false,
-	auto_delete:false
+	auto_delete:true
   };
 
 
@@ -79,13 +79,13 @@ function simulateCar(id, tripID, io) {
       function(data) {
 	 
         const { latitude, longitude } = data.coords;
-        bus.send("TrackingQueue",{
+        /*bus.send("TrackingQueue",{
           trackerID: id,
           tripID: tripID,
           longitude: longitude,
           latitude: latitude,
           trackedAt: new Date()
-        });
+        });*/
 		var obj = JSON5.stringify({
           trackerID: id,
           tripID: tripID,
@@ -100,7 +100,7 @@ function simulateCar(id, tripID, io) {
 
 			ch.assertQueue(q, {durable: false});
 			// Note: on Node 6 Buffer.from(msg) should be used
-			ch.sendToQueue(q, new Buffer(obj));
+			ch.sendToQueue(q, Buffer.from(obj));
 			console.log(" [x] Sent 'Hello World!'");
 			});
 		});
