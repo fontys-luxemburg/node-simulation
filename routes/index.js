@@ -4,8 +4,8 @@ var uuid = require("uuid/v4");
 var bus = require("servicebus").bus();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
-const path = "http://localhost:8080/tracking.war/api/trackers/available";
-const tripPath = "http://localhost:8080/tracking.war/api/trips/newid"; 
+const path = "http://localhost:8080/tracking/api/trackers/available";
+const tripPath = "http://localhost:8080/tracking/api/trips/newid"; 
 var axios = require("axios");
 
 var trackers;
@@ -78,16 +78,8 @@ function simulateCar(id, tripID, io) {
   //Update car untill finished
   var interval = setInterval(function() {
     simulator.getCurrentPosition(
-      function(data) {
-	 
-        const { latitude, longitude } = data.coords;
-        /*bus.send("TrackingQueue",{
-          trackerID: id,
-          tripID: tripID,
-          longitude: longitude,
-          latitude: latitude,
-          trackedAt: new Date()
-        });*/
+      function(data) {	 
+        const { latitude, longitude } = data.coords;      
 		var obj = JSON5.stringify({
           trackerID: id,
           tripID: tripID,
@@ -96,14 +88,17 @@ function simulateCar(id, tripID, io) {
           trackedAt: new Date()
         });
 		console.log(obj);
-		 amqp.connect('amqp://localhost', function(err, conn) {
-			conn.createChannel(function(err, ch) {
-			var q = 'TrackingQueue';
+		 amqp.connect('amqp://youtrack.tjidde.nl', function(err, conn) {
+       
+			conn.createConfirmChannel(function(err, ch) {
+			var q = 'TrackingQueue2';
+      console.log("Create channel");
 
-			ch.assertQueue(q, {durable: false});
-			// Note: on Node 6 Buffer.from(msg) should be used
+
+      ch.assertQueue(q, {durable: true});
+      ch.assertQueue(q, {autoDelete: false});
+      console.log("After assert");
 			ch.sendToQueue(q, Buffer.from(obj));
-			console.log(" [x] Sent 'Hello World!'");
 			});
 		});
         io.emit("car update", { id: id, ...data.coords });
