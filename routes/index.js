@@ -1,7 +1,5 @@
 var express = require("express");
 var router = express.Router();
-var uuid = require("uuid/v4");
-var bus = require("servicebus").bus();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
 const path = "http://localhost:8080/tracking/api/trackers/available";
@@ -27,7 +25,7 @@ router.get("/", function(req, res, next) {
 
     var id = tracker.trackerId;
 
-    await getTripID();
+    await getTripID(id);
     var tripID = trip;
     console.log('Trip nr: ' + trip);
 
@@ -92,12 +90,9 @@ function simulateCar(id, tripID, io) {
        
 			conn.createConfirmChannel(function(err, ch) {
 			var q = 'TrackingQueue2';
-      console.log("Create channel");
-
 
       ch.assertQueue(q, {durable: true});
       ch.assertQueue(q, {autoDelete: false});
-      console.log("After assert");
 			ch.sendToQueue(q, Buffer.from(obj));
 			});
 		});
@@ -128,9 +123,9 @@ async function getUUID() {
   return;
 }
 
-async function getTripID(){
+async function getTripID(trackerId) {
   console.log('path = ' + tripPath)
-  await axios.get(tripPath).then(response => {
+  await axios.get(tripPath + '/' + trackerId).then(response => {
     trip = response.data;
   }).catch(error => {
     console.log("kan geen trip vinden")
