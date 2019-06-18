@@ -89,7 +89,7 @@ function simulateCar(id, tripID, io) {
 		 amqp.connect('amqp://youtrack.tjidde.nl', function(err, conn) {
        
 			conn.createConfirmChannel(function(err, ch) {
-			var q = 'TrackingQueue';
+			var q = 'TrackingQueue2';
 
       ch.assertQueue(q, {durable: true});
       ch.assertQueue(q, {autoDelete: false});
