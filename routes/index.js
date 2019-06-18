@@ -4,7 +4,10 @@ var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
 const path = "http://178.62.217.247:9050/tracking/api/trackers/available";
 const tripPath = "http://178.62.217.247:9050/tracking/api/trips/newid";
-const finishPath = "http://178.62.217.247:9050/tracking/api/trips/"
+const finishPath = "http://178.62.217.247:9050/tracking/api/finishTrip/"
+//const path = "http://localhost:8080/tracking/api/trackers/available";
+//const tripPath = "http://localhost:8080/tracking/api/trips/newid";
+//const finishPath = "http://localhost:8080/tracking/api/trips/finishTrip/"
 var axios = require("axios");
 
 var trackers;
@@ -77,26 +80,35 @@ function simulateCar(id, tripID, io) {
   //Update car untill finished
   var interval = setInterval(function() {
     simulator.getCurrentPosition(
-      function(data) {	 
+      function(data) {
+        
         const { latitude, longitude } = data.coords;      
-		var obj = JSON5.stringify({
+		    var obj = JSON5.stringify({
           trackerID: id,
           tripID: tripID,
           longitude: longitude,
           latitude: latitude,
           trackedAt: new Date()
         });
-		console.log(obj);
-		 amqp.connect('amqp://youtrack.tjidde.nl', function(err, conn) {
-       
-			conn.createConfirmChannel(function(err, ch) {
-			var q = 'TrackingQueue2';
+        console.log(obj);
+        amqp.connect('amqp://youtrack.tjidde.nl', function(err, conn) {
+          try {
+			      conn.createConfirmChannel(function(err, ch) {
+			        var q = 'TrackingQueue';
+              ch.assertQueue(q, {durable: true});
+              ch.assertQueue(q, {autoDelete: false});
+			        ch.sendToQueue(q, Buffer.from(obj));
+            });
+          } 
+          catch (error) {
+            //if error occured stop interval
+            io.emit("car finished", { id });
+            SetEndTrip(tripID);
+            clearInterval(interval);
+            return;
+          }
 
-      ch.assertQueue(q, {durable: true});
-      ch.assertQueue(q, {autoDelete: false});
-			ch.sendToQueue(q, Buffer.from(obj));
-			});
-		});
+		    });
         io.emit("car update", { id: id, ...data.coords });
       },
       function() {
@@ -107,6 +119,7 @@ function simulateCar(id, tripID, io) {
       },
       options
     );
+		 
   }, 500);
 }
 
@@ -136,7 +149,9 @@ async function getTripID(trackerId) {
 }
 
 function SetEndTrip(tripId) {
-  axios.post(finishPath + tripId)
+  axios.get(finishPath + tripId).then(response => {
+    console.log(response);
+  })
   .catch(error => {
     console.log("Trip bestaat niet");
     console.log(error.response);
