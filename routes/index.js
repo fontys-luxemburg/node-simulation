@@ -2,8 +2,9 @@ var express = require("express");
 var router = express.Router();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
-const path = "http://localhost:8080/tracking/api/trackers/available";
-const tripPath = "http://localhost:8080/tracking/api/trips/newid"; 
+const path = "http://178.62.217.247:9050/tracking/api/trackers/available";
+const tripPath = "http://178.62.217.247:9050/tracking/api/trips/newid";
+const finishPath = "http://178.62.217.247:9050/tracking/api/trips/"
 var axios = require("axios");
 
 var trackers;
@@ -100,6 +101,7 @@ function simulateCar(id, tripID, io) {
       },
       function() {
         io.emit("car finished", { id });
+        SetEndTrip(tripID);
         clearInterval(interval);
         return;
       },
@@ -130,6 +132,14 @@ async function getTripID(trackerId) {
   }).catch(error => {
     console.log("kan geen trip vinden")
     console.log(error.response)
+  })
+}
+
+function SetEndTrip(tripId) {
+  axios.post(finishPath + tripId)
+  .catch(error => {
+    console.log("Trip bestaat niet");
+    console.log(error.response);
   })
 }
 
