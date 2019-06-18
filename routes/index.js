@@ -1,13 +1,13 @@
 var express = require("express");
 var router = express.Router();
-var uuid = require("uuid/v4");
-var bus = require("servicebus").bus();
 var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
-const path = "http://localhost:8080/tracking/api/trackers";
+const path = "http://localhost:8080/tracking/api/trackers/available";
+const tripPath = "http://localhost:8080/tracking/api/trips/newid"; 
 var axios = require("axios");
 
-var uuidP;
+var trackers;
+var trip;
 
 /* GET home page. */
 router.get("/", function(req, res, next) {
@@ -17,36 +17,27 @@ router.get("/", function(req, res, next) {
  router.post("/cars", async function(req, res, next) {
   const { io } = req.app;
 
-  var amount = req.query.amountOfCars;
-  var ID = req.query.ID;
-
-  console.log("amount of cars: " + amount + " ID: " + ID);
-
   //Spawn cars
-  for (let index = 0; index < amount; index++) {
-    //ID
-    var id;
-    if(ID && amount == 1)
-    {
-      id = ID;
-    }
-    else
-    {
-      //id = uuid();
-      //id = Math.floor(Math.random() * 10000) + 1;
-      await getUUID();
-      console.log("UUID: " + uuidP);
-      id = uuidP;
-    }
+  await getUUID();
 
-    io.emit("car created", { id: id });
-    simulateCar(id, io);
+  for(var tracker of trackers){
+    console.log('tracker id = ' + tracker.trackerId);
+
+    var id = tracker.trackerId;
+
+    await getTripID(id);
+    var tripID = trip;
+    console.log('Trip nr: ' + trip);
+
+    io.emit("car created", {id: id});
+    simulateCar(id, tripID, io);  
   }
+  
   res.send("Started!");
 });
 
 //Simulate car
-function simulateCar(id, io) { 
+function simulateCar(id, tripID, io) { 
   //Set up requirements for route selecting
   const fs = require('fs');
   const path = require("path");
@@ -78,39 +69,31 @@ function simulateCar(id, io) {
     timeout: Infinity,
     maximumAge: 0,
 	durable: false,
-	auto_delete:false
+	auto_delete:true
   };
 
 
   //Update car untill finished
   var interval = setInterval(function() {
     simulator.getCurrentPosition(
-      function(data) {
-	 
-        const { latitude, longitude } = data.coords;
-    /*    bus.send("TrackingQueue",{
-          trackerID: id,
-          tripID: Math.floor(Math.random()*999999)+1,
-          longitude: longitude,
-          latitude: latitude,
-          trackedAt: new Date()
-        });*/
+      function(data) {	 
+        const { latitude, longitude } = data.coords;      
 		var obj = JSON5.stringify({
           trackerID: id,
-          tripID: id,
+          tripID: tripID,
           longitude: longitude,
           latitude: latitude,
           trackedAt: new Date()
         });
 		console.log(obj);
-		 amqp.connect('amqp://localhost', function(err, conn) {
-			conn.createChannel(function(err, ch) {
-			var q = 'TrackingQueue';
+		 amqp.connect('amqp://youtrack.tjidde.nl', function(err, conn) {
+       
+			conn.createConfirmChannel(function(err, ch) {
+			var q = 'TrackingQueue2';
 
-			ch.assertQueue(q, {durable: false});
-			// Note: on Node 6 Buffer.from(msg) should be used
-			ch.sendToQueue(q, new Buffer(obj));
-			console.log(" [x] Sent 'Hello World!'");
+      ch.assertQueue(q, {durable: true});
+      ch.assertQueue(q, {autoDelete: false});
+			ch.sendToQueue(q, Buffer.from(obj));
 			});
 		});
         io.emit("car update", { id: id, ...data.coords });
@@ -125,31 +108,29 @@ function simulateCar(id, io) {
   }, 500);
 }
 
-
-
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max) + 1);
 }
 
 async function getUUID() {
- 
   console.log('path = ' + path);
-
-  await axios({
-    method: 'POST',
-    url: path,
-    data: {}
-  })
-  .then(response => {
-    console.log("UUID van tracking");
-    uuidP = response.data;
-  })
-  .catch(e => {
-    console.log('id wordt UUID gezet');
-    console.log(e);
-    uuidP = uuid();
-  })
+  await axios.get(path).then(response => {
+    trackers = response.data;
+  }).catch(error => {
+    console.log("kan geen tracker vinden")
+    console.log(error.response)
+  });
   return;
+}
+
+async function getTripID(trackerId) {
+  console.log('path = ' + tripPath)
+  await axios.get(tripPath + '/' + trackerId).then(response => {
+    trip = response.data;
+  }).catch(error => {
+    console.log("kan geen trip vinden")
+    console.log(error.response)
+  })
 }
 
 module.exports = router;
