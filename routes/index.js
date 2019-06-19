@@ -4,10 +4,10 @@ var amqp = require('amqplib/callback_api');
 const JSON5 = require('json5')
 const path = "http://178.62.217.247:9050/tracking/api/trackers/available";
 const tripPath = "http://178.62.217.247:9050/tracking/api/trips/newid";
-const finishPath = "http://178.62.217.247:9050/tracking/api/trips/finishTrip/"
+const finishPath = "http://178.62.217.247:9050/tracking/api/trips/finish/"
 //const path = "http://localhost:8080/tracking/api/trackers/available";
 //const tripPath = "http://localhost:8080/tracking/api/trips/newid";
-//const finishPath = "http://localhost:8080/tracking/api/trips/finishTrip/"
+//const finishPath = "http://localhost:8080/tracking/api/trips/finish/"
 var axios = require("axios");
 
 var trackers;
